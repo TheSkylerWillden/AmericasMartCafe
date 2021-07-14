@@ -12,6 +12,9 @@ target 'AmericasMartCafe' do
     :hermes_enabled => false
   )
 
+
+
+
   target 'AmericasMartCafeTests' do
     inherit! :complete
     # Pods for testing
@@ -23,7 +26,15 @@ target 'AmericasMartCafe' do
   # you should disable the next line.
   use_flipper!()
 
+
+
   post_install do |installer|
-    react_native_post_install(installer)
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        if Gem::Version.new('8.0') > Gem::Version.new(config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'])
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
+        end
+      end
+    end
   end
 end

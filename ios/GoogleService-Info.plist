@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>820286851570-u759bk4d8qv13crlcnkfq7m8dn5l5cpr.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.820286851570-u759bk4d8qv13crlcnkfq7m8dn5l5cpr</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDae7-u0ZAAI5Subz1Q1H1ugH1WWDXcKSg</string>
+	<key>GCM_SENDER_ID</key>
+	<string>820286851570</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.reactjs.native.example.AmericasMartCafe</string>
+	<key>PROJECT_ID</key>
+	<string>americascafe-1938c</string>
+	<key>STORAGE_BUCKET</key>
+	<string>americascafe-1938c.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:820286851570:ios:abd8b66214e6e59d11436b</string>
+</dict>
+</plist>
