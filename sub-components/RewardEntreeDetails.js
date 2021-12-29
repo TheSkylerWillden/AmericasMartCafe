@@ -1,12 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  Alert,
-} from 'react-native';
+import {View, Text, StyleSheet, TouchableOpacity, Modal} from 'react-native';
 import {useCartContext} from '../contexts/Cart';
 import {CartItem} from '../models/CartItem';
 import DrinkSelection from '../sub-components/DrinkSelection';
@@ -18,46 +11,41 @@ import {useMenuContext} from '../contexts/Menu';
 import Button from '../sub-components/Button';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast from 'react-native-toast-message';
+import {useRewardContext} from '../contexts/RewardContext';
 
-const EntreeDetails = ({route, navigation}) => {
+const RewardEntreeDetails = ({route, navigation}) => {
   const currentEntree = route.params.cartItem
     ? route.params.cartItem.entreeData
     : route.params.entreeData;
+
+  //if editItem is not null, this item came from the cart.
   const editItem = route.params.cartItem ? route.params.cartItem : null;
 
-  //Drink Selection ******************************
-  const [drinkSelection, updateDrinkSelection] = useState(
-    route.params.cartItem ? route.params.cartItem.drink : null,
-  );
-  // ********* Fries ************************
-  const [friesSelection, updateFriesSelection] = useState(
-    route.params.cartItem ? route.params.cartItem.fries : null,
+  const rewardData = route.params.cartItem
+    ? route.params.cartItem.rewardData
+    : route.params.rewardData;
+
+  const [drinkSelection, updateDrinkSelection] = useState();
+
+  const [friesSelection, updateFriesSelection] = useState();
+  const [sizeSelection, updateSizeSelection] = useState(
+    rewardData.rewardOptions.size,
   );
 
-  // ********** Size ****************
-  const [sizeSelection, updateSizeSelection] = useState(
-    route.params.cartItem
-      ? route.params.cartItem.size
-      : currentEntree.options.sizePrice[0],
-  );
-  //************ Sauces ************ */
   const [sauceSelections, updateSauceSelections] = useState(
     route.params.cartItem ? route.params.cartItem.sauces : [],
   );
-
-  // ************** Customizations *************
+  //*********** Customizations ************ */
   const [customizations, updateCustomizations] = useState(
     route.params.cartItem ? route.params.cartItem.customizations : [],
   );
-
-  const [subTotal, updateSubTotal] = useState(
-    route.params.cartItem ? route.params.cartItem.subTotal : 0,
-  );
+  const [subTotal, updateSubTotal] = useState();
+  const [discountSubTotal, updateDiscountSubTotal] = useState();
   const [customModalActive, toggleCustomModal] = useState(false);
   const [sauceModalActive, toggleSauceModal] = useState(false);
   const addItemToCart = useCartContext().updateCart;
 
-  // drink, sauce, and fry pricing options drawn from Menu context
+  // drink and fry pricing options drawn from Menu context
   const drinkOptions = useMenuContext().menu.find(
     element => element.title == 'drinks',
   ).options.sizePrice;
@@ -70,45 +58,72 @@ const EntreeDetails = ({route, navigation}) => {
     element => element.title == 'sauces',
   ).sauceOptions;
 
+  //updating values for size, fries, and drink which are predetermined for rewards.
+  useEffect(() => {
+    const size = currentEntree.options.sizePrice.find(
+      item => item.size === rewardData.rewardOptions.size,
+    );
+    updateSizeSelection(size);
+    if (rewardData.rewardOptions.drink) {
+      const drink = drinkOptions.find(
+        item => item.size === rewardData.rewardOptions.drink,
+      );
+      updateDrinkSelection(drink);
+    }
+    if (rewardData.rewardOptions.fries) {
+      const fries = friesOptions.find(
+        item => item.size === rewardData.rewardOptions.fries,
+      );
+      updateFriesSelection(fries);
+    }
+  }, []);
+
   useEffect(() => {
     // Updates Subtotal value when state variables change.
     calculateSubTotal();
   }, [sizeSelection, drinkSelection, friesSelection]);
 
   const calculateSubTotal = () => {
-    updateSubTotal(
-      (currentEntree.options.sizePrice.length == 1
-        ? currentEntree.options.sizePrice[0].price
-        : 0) +
-        (sizeSelection ? sizeSelection.price : 0) +
-        (drinkSelection ? drinkSelection.price : 0) +
-        (friesSelection ? friesSelection.price : 0),
+    const rewardItemSizePrice = currentEntree.options.sizePrice.find(
+      item => item.size === rewardData.rewardOptions.size,
     );
+
+    updateSubTotal(rewardItemSizePrice.price);
+
+    const tempSubTotal = Number(
+      (
+        rewardItemSizePrice.price -
+        rewardItemSizePrice.price * rewardData.discount
+      ).toFixed(),
+    );
+
+    updateDiscountSubTotal(tempSubTotal);
   };
 
   const addToCart = () => {
     if (editItem) {
+      console.log('here');
+
       editCart();
       Toast.show({
         type: 'success',
         text1: 'Item updated',
-        // text2: `${currentEntree.title} added to cart.`,
         visibilityTime: 1750,
       });
-      navigation.navigate('Home');
+      navigation.navigate('Rewards');
       navigation.navigate('cart');
       return;
     }
     addItemToCart(prevCart => {
       const tempItem = new CartItem(
-        // prevCart.length,
         currentEntree,
         drinkSelection,
         friesSelection,
         sizeSelection,
         sauceSelections,
         customizations,
-        subTotal,
+        discountSubTotal,
+        rewardData,
       );
 
       const tempCart = [...prevCart, tempItem];
@@ -120,7 +135,9 @@ const EntreeDetails = ({route, navigation}) => {
       // text2: `${currentEntree.title} added to cart.`,
       visibilityTime: 1750,
     });
-    navigation.navigate('Home', {});
+
+    navigation.navigate('Rewards');
+    navigation.navigate('cart');
   };
 
   const editCart = () => {
@@ -133,7 +150,8 @@ const EntreeDetails = ({route, navigation}) => {
         sizeSelection,
         sauceSelections,
         customizations,
-        subTotal,
+        discountSubTotal,
+        rewardData,
       );
 
       const tempCart = [...prevCart];
@@ -169,8 +187,8 @@ const EntreeDetails = ({route, navigation}) => {
             <View style={{flex: 2, alignItems: 'flex-end'}}>
               <EntreeSizeSelection
                 sizeSelection={sizeSelection}
-                updateSizeSelection={updateSizeSelection}
                 availableSizes={currentEntree.options.sizePrice}
+                updateSizeSelection={() => null}
               />
             </View>
           </View>
@@ -185,7 +203,7 @@ const EntreeDetails = ({route, navigation}) => {
             <DrinkSelection
               drinkOptions={drinkOptions}
               drinkSelection={drinkSelection}
-              updateDrinkSelection={updateDrinkSelection}
+              updateDrinkSelection={() => null}
             />
           </View>
         </View>
@@ -200,7 +218,7 @@ const EntreeDetails = ({route, navigation}) => {
               <FriesSelection
                 friesOptions={friesOptions}
                 friesSelection={friesSelection}
-                updateFriesSelection={updateFriesSelection}
+                updateFriesSelection={() => null}
               />
             </View>
           </View>
@@ -214,7 +232,6 @@ const EntreeDetails = ({route, navigation}) => {
           borderBottomWidth: 1,
           width: 330,
         }}></View>
-      {/* ********* Customizations *************************** */}
       <View style={{width: 330, flexDirection: 'row'}}>
         {currentEntree.options.customizations ? (
           <Button
@@ -233,7 +250,6 @@ const EntreeDetails = ({route, navigation}) => {
             </Text>
           </Button>
         ) : null}
-        {/* ********* sauces ********************************* */}
         {currentEntree.options.saucesOffered == true ? (
           <Button
             styles={{
@@ -272,7 +288,7 @@ const EntreeDetails = ({route, navigation}) => {
               fontSize: 22,
               color: '#cb0e28',
             }}>
-            Add to cart - ${subTotal / 100}
+            Add to cart - ${(discountSubTotal / 100).toFixed(2)}
           </Text>
         </Button>
       </View>
@@ -307,7 +323,7 @@ const EntreeDetails = ({route, navigation}) => {
 const EntreeDetailsStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EDEDED',
+    // backgroundColor: '#cb0e28',
     alignItems: 'center',
   },
   image: {
@@ -341,4 +357,4 @@ const EntreeDetailsStyles = StyleSheet.create({
   },
 });
 
-export default EntreeDetails;
+export default RewardEntreeDetails;

@@ -1,8 +1,5 @@
 import React from 'react';
-import {View} from 'react-native';
 
-const Checkout = () => {
-  return <View></View>;
-};
+const Checkout = () => {};
 
 export default Checkout;

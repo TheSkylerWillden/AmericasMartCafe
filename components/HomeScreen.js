@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useState} from 'react';
+import Button from '../sub-components/Button';
 import {Alert} from 'react-native';
 import {
   View,
@@ -7,12 +8,49 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import firestore from '@react-native-firebase/firestore';
+import {useEffect} from 'react/cjs/react.development';
 
 const HomeScreen = ({navigation}) => {
+  const [categories, updateCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const temp = await firestore().collection('menuCategories').get();
+      const tempArray = [];
+      temp.forEach(item => tempArray.push(item.data()));
+      updateCategories(tempArray);
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <View style={mainStyles.background}>
-      <View style={mainStyles.iconContainer1}>
-        <TouchableOpacity onPress={() => navigation.navigate('EntreeList', {})}>
+      {categories.map((item, index) => (
+        <Button
+          key={index}
+          onPress={() =>
+            navigation.navigate('EntreeList', {menuCategory: item.title})
+          }
+          title={item.title}
+          styles={{
+            backgroundColor: 'white',
+            marginTop: 10,
+            height: 80,
+            width: 300,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Text
+            style={{fontFamily: 'BebasNeue', fontSize: 22, color: '#cb0e28'}}>
+            {item.title}
+          </Text>
+        </Button>
+      ))}
+      {/* <View style={mainStyles.iconContainer1}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EntreeList', {menuCategory: 'chicken'})
+          }>
           <ImageBackground
             imageStyle={{borderRadius: 10}}
             style={mainStyles.icon}
@@ -41,7 +79,7 @@ const HomeScreen = ({navigation}) => {
       </View>
       <View style={mainStyles.iconContainer3}>
         <View style={mainStyles.iconContainer4}>
-          <TouchableOpacity onPress={() => Alert.alert('image clicked')}>
+          <TouchableOpacity onPress={() => Alert.alert('image clicked', false)}>
             <ImageBackground
               imageStyle={{borderRadius: 10}}
               style={mainStyles.miniIcon}
@@ -49,7 +87,7 @@ const HomeScreen = ({navigation}) => {
               <Text style={mainStyles.iconText}>Seafood</Text>
             </ImageBackground>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => Alert.alert('image clicked')}>
+          <TouchableOpacity onPress={() => Alert.prompt('Successfully added')}>
             <ImageBackground
               imageStyle={{borderRadius: 10}}
               style={[mainStyles.miniIcon, , mainStyles.marginTop]}
@@ -70,7 +108,10 @@ const HomeScreen = ({navigation}) => {
         </View>
       </View>
       <View style={mainStyles.iconContainer1}>
-        <TouchableOpacity onPress={() => navigation.navigate('EntreeList', {})}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EntreeList', {menuCategory: 'burgers'})
+          }>
           <ImageBackground
             imageStyle={{borderRadius: 10}}
             style={mainStyles.icon}
@@ -78,14 +119,14 @@ const HomeScreen = ({navigation}) => {
             <Text style={mainStyles.iconText}>Burgers</Text>
           </ImageBackground>
         </TouchableOpacity>
-      </View>
+      </View> */}
     </View>
   );
 };
 
 const mainStyles = StyleSheet.create({
   background: {
-    backgroundColor: '#ffffff',
+    // backgroundColor: '#ffffff',
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
