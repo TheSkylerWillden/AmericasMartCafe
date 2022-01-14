@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {Image} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import ShoppingCart from './ShoppingCart';
 import EntreeDetails from './EntreeDetails';
@@ -10,6 +11,12 @@ const CartTab = () => {
   return (
     <Stack.Navigator
       screenOptions={{
+        headerTitle: () => (
+          <Image
+            source={require('../images/americas_mart_logo.png')}
+            style={{height: 60, width: 130, marginBottom: -40}}
+          />
+        ),
         // headerStatusBarHeight: 0,
         headerStyle: {
           backgroundColor: '#cb0e28',

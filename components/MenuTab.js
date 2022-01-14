@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, Image} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './HomeScreen';
 import EntreeList from './EntreeList';
@@ -16,6 +16,12 @@ const MenuTab = () => {
           backgroundColor: '#cb0e28',
           // height: 70,
         },
+        headerTitle: () => (
+          <Image
+            source={require('../images/americas_mart_logo.png')}
+            style={{height: 60, width: 130, marginBottom: -40}}
+          />
+        ),
         headerBackTitleVisible: false,
         headerTitleStyle: {
           color: 'white',

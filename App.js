@@ -15,6 +15,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Toast, {BaseToast} from 'react-native-toast-message';
 import RewardContextProvider from './contexts/RewardContext';
+import {useCartContext} from './contexts/Cart';
 const Tab = createBottomTabNavigator();
 
 const toastConfig = {
@@ -49,49 +50,7 @@ export default function App() {
               merchantIdentifier="merchant.AmericasMart" // required for Apple Pay
             >
               <SafeAreaProvider>
-                <NavigationContainer>
-                  <Tab.Navigator
-                    screenOptions={({route}) => ({
-                      tabBarIcon: () => {
-                        let iconName;
-                        if (route.name == 'menu') {
-                          iconName = 'fast-food-outline';
-                        } else if (route.name == 'cart') {
-                          iconName = 'cart-outline';
-                        } else if (route.name == 'rewards') {
-                          iconName = 'gift-outline';
-                        } else if (route.name == 'account') {
-                          iconName = 'person-outline';
-                        }
-                        return (
-                          <Ionicons name={iconName} size={32} color="#cb0e28" />
-                        );
-                      },
-
-                      tabBarLabelStyle: {
-                        fontSize: 12,
-                        // color: '#cb0e28',
-                        // fontFamily: 'BebasNeue',
-                      },
-                      tabBarStyle: {
-                        // paddingBottom: 0,
-                        // height: 80,
-                        paddingTop: 4,
-                      },
-                      // tabBarInactiveBackgroundColor: '#cb0e28',
-                      // tabBarInactiveBackgroundColor: 'white',
-                      // tabBarActiveBackgroundColor: '#cb0e28',
-                      tabBarActiveTintColor: '#cb0e28',
-                      // tabBarInactiveTintColor: 'white',
-                      headerShown: false,
-                      // tabBarLabel: () => null,
-                    })}>
-                    <Tab.Screen name="menu" component={MenuTab} />
-                    <Tab.Screen name="cart" component={CartTab} />
-                    <Tab.Screen name="rewards" component={RewardsTab} />
-                    <Tab.Screen name="account" component={Account} />
-                  </Tab.Navigator>
-                </NavigationContainer>
+                <InnerApp />
               </SafeAreaProvider>
             </StripeProvider>
           </MenuContextProvider>
@@ -120,4 +79,63 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
   },
+};
+
+const InnerApp = () => {
+  const cartList = useCartContext().cart;
+  return (
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({route}) => ({
+          tabBarIcon: () => {
+            let iconName;
+            if (route.name == 'menu') {
+              iconName = 'fast-food-outline';
+            } else if (route.name == 'cart') {
+              iconName = 'cart-outline';
+            } else if (route.name == 'rewards') {
+              iconName = 'gift-outline';
+            } else if (route.name == 'account') {
+              iconName = 'person-outline';
+            }
+            return <Ionicons name={iconName} size={32} color="#cb0e28" />;
+          },
+
+          tabBarLabelStyle: {
+            fontSize: 12,
+            // color: '#cb0e28',
+            // fontFamily: 'BebasNeue',
+          },
+          tabBarStyle: {
+            // paddingBottom: 0,
+            // height: 80,
+            paddingTop: 4,
+          },
+          // tabBarInactiveBackgroundColor: '#cb0e28',
+          // tabBarInactiveBackgroundColor: 'white',
+          // tabBarActiveBackgroundColor: '#cb0e28',
+          tabBarActiveTintColor: '#cb0e28',
+          // tabBarInactiveTintColor: 'white',
+          headerShown: false,
+          // tabBarLabel: () => null,
+          headerLeft: () => (
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                backgroundColor: 'black',
+              }}></View>
+          ),
+        })}>
+        <Tab.Screen name="menu" component={MenuTab} />
+        <Tab.Screen
+          name="cart"
+          component={CartTab}
+          options={{tabBarBadge: cartList.length > 0 ? cartList.length : null}}
+        />
+        <Tab.Screen name="rewards" component={RewardsTab} />
+        <Tab.Screen name="account" component={Account} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
 };

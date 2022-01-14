@@ -1,58 +1,73 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, Image, Text, TouchableHighlight} from 'react-native';
 import Button from '../sub-components/Button';
+import storage from '@react-native-firebase/storage';
+import FastImage from 'react-native-fast-image';
 
 const Entree = ({navigation, item, rewardData, onPress}) => {
+  const [imageRef, updateImageRef] = useState();
+  const [imageLoading, updateImageLoading] = useState(true);
   const entreeData = item;
   const reward = rewardData;
+
+  useEffect(() => {
+    fetchImage();
+  }, []);
+
+  const fetchImage = async () => {
+    const temp = await storage()
+      .ref(`/images/${entreeData.imageTitle}`)
+      .getDownloadURL();
+
+    await updateImageRef(temp);
+  };
 
   return (
     <Button
       onPress={onPress}
       styles={{
-        height: 75,
         width: 330,
         backgroundColor: 'white',
         marginTop: 10,
-        flexDirection: 'row',
       }}>
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          flex: 1,
-          alignItems: 'flex-start',
-          paddingLeft: 5,
-        }}>
-        <Image
-          style={EntreeStyles.entreeImage}
-          source={{
-            uri: 'https://firebasestorage.googleapis.com/v0/b/americascafe-1938c.appspot.com/o/sandwich.jpg?alt=media&token=ad2c6f1b-15cf-4e35-87c0-77dfeac211e1',
-          }}
-        />
-      </View>
-      <View style={{flex: 2, alignItems: 'center'}}>
-        <Text style={EntreeStyles.mainTitle}>{entreeData.title}</Text>
-        <Text style={EntreeStyles.description}>
-          $ {entreeData.options.sizePrice[0].price / 100}
-        </Text>
+      {/* Shadow Box Container */}
+      <View style={{overflow: 'hidden', flexDirection: 'row', borderRadius: 6}}>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignItems: 'flex-start',
+          }}>
+          {/* <Image
+            style={[EntreeStyles.entreeImage, {backgroundColor: 'grey'}]}
+            source={{
+              uri: imageRef,
+            }}
+          /> */}
+          <FastImage
+            style={[EntreeStyles.entreeImage, {backgroundColor: 'grey'}]}
+            source={{
+              uri: imageRef,
+              // headers: { Authorization: 'someAuthToken' },
+              priority: FastImage.priority.normal,
+            }}
+            resizeMode={FastImage.resizeMode.contain}
+          />
+        </View>
+        <View
+          style={{
+            width: 260,
+            alignSelf: 'stretch',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text style={EntreeStyles.mainTitle}>{entreeData.title}</Text>
+          <Text style={EntreeStyles.description}>
+            $ {entreeData.options.sizePrice[0].price / 100}
+          </Text>
+        </View>
       </View>
     </Button>
-    // <TouchableHighlight
-    //   onPress={() => navigation.navigate('EntreeDetails', {entreeData})}>
-    //   <View style={EntreeStyles.entree}>
-    //     <Image
-    //       style={EntreeStyles.entreeImage}
-    //       source={{
-    //         uri: 'https://firebasestorage.googleapis.com/v0/b/americascafe-1938c.appspot.com/o/sandwich.jpg?alt=media&token=ad2c6f1b-15cf-4e35-87c0-77dfeac211e1',
-    //       }}
-    //     />
-    //     <View style={EntreeStyles.body}>
-    //       <Text style={EntreeStyles.mainTitle}>{entreeData.title}</Text>
-    //       <Text style={EntreeStyles.description}>$ {entreeData.subTotal}</Text>
-    //     </View>
-    //   </View>
-    // </TouchableHighlight>
   );
 };
 
@@ -66,8 +81,7 @@ const EntreeStyles = StyleSheet.create({
   },
   entreeImage: {
     height: 70,
-    width: 90,
-    borderRadius: 8,
+    width: 70,
   },
   body: {
     alignItems: 'center',

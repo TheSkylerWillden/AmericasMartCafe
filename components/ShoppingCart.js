@@ -63,10 +63,10 @@ const ShoppingCart = ({navigation, route}) => {
   const [closingTime, updateClosingTime] = useState(new Date());
 
   //Firebase Emulator
-  if (__DEV__) {
-    // If you are running on a physical device, replace http://localhost with the local ip of your PC. (http://192.168.x.x)
-    functions().useFunctionsEmulator('http://localhost:5001');
-  }
+  // if (__DEV__) {
+  //   // If you are running on a physical device, replace http://localhost with the local ip of your PC. (http://192.168.x.x)
+  //   functions().useFunctionsEmulator('http://localhost:5001');
+  // }
 
   //Retrieve Cafe OPening and closing times ******
   useEffect(() => {
@@ -138,13 +138,16 @@ const ShoppingCart = ({navigation, route}) => {
 
     // on condition that there is a reward for a percentage off total price.
     if (Object.keys(totalReward).length !== 0) {
-      (tempDiscountedSubTotal =
-        tempSubTotal - tempSubTotal * totalReward.discount),
+      (tempDiscountedSubTotal = Number(
+        (tempSubTotal - tempSubTotal * totalReward.discount).toFixed(0),
+      )),
         updateDiscountSubTotal(tempDiscountedSubTotal);
-      tempTax = taxRate * tempDiscountedSubTotal;
+      tempTax = Number((taxRate * tempDiscountedSubTotal).toFixed(0));
 
-      updateTaxTotal(Number(tempTax.toFixed(0)));
-      updateTotal(Number(tempTax + tempDiscountedSubTotal).toFixed(0));
+      updateTaxTotal(tempTax);
+      updateTotal(tempTax + tempDiscountedSubTotal);
+
+      // updateTotal(Number(tempTax + tempDiscountedSubTotal).toFixed(0));
     } else {
       tempTax = Number((taxRate * tempSubTotal).toFixed(0));
       updateTaxTotal(tempTax);
@@ -194,27 +197,21 @@ const ShoppingCart = ({navigation, route}) => {
     } else if (user != null) {
       const response = await functions().httpsCallable(
         'FirstTimeCustomerPayment',
-      )();
+      )({
+        userRef: user.userRef,
+        cartList: cartList,
+        totalReward: totalReward,
+      });
 
       const {customer, ephemeralKey, paymentIntent} = response.data;
 
-      //Adding Stripe ID to User in Firestore
-      const newCustomer = await firestore()
-        .collection('users')
-        .where('uid', '==', user.uid)
-        .get();
+      // //Adding Stripe ID to User in Firestore
+      // const newCustomer = await firestore()
+      //   .collection('users')
+      //   .where('uid', '==', user.uid)
+      //   .get();
 
-      newCustomer.docs[0].ref.update({stripeID: customer});
-
-      return {
-        customer,
-        paymentIntent,
-        ephemeralKey,
-      };
-    } else {
-      const response = await functions().httpsCallable('GuestPayment')();
-
-      const {customer, ephemeralKey, paymentIntent} = response.data;
+      // newCustomer.docs[0].ref.update({stripeID: customer});
 
       return {
         customer,
@@ -222,6 +219,17 @@ const ShoppingCart = ({navigation, route}) => {
         ephemeralKey,
       };
     }
+    //  else {
+    //   const response = await functions().httpsCallable('GuestPayment')();
+
+    //   const {customer, ephemeralKey, paymentIntent} = response.data;
+
+    //   return {
+    //     customer,
+    //     paymentIntent,
+    //     ephemeralKey,
+    //   };
+    // }
   };
 
   //******** Payment Sheeet INitializing********** */
@@ -324,7 +332,7 @@ const ShoppingCart = ({navigation, route}) => {
       stripePaymentId,
       user.userRef,
       user.name,
-      user.totalReward,
+      totalReward,
       pickUpTime.toLocaleTimeString([], {hour: 'numeric', minute: '2-digit'}),
       total,
     );
@@ -381,11 +389,13 @@ const ShoppingCart = ({navigation, route}) => {
           });
         });
     }
+    route.params = null;
     updatePayLoading(false);
     updateCartList([]);
     updateTotalReward({});
     updateAsapActive(false);
     updateSelectActive(false);
+    updateDiscountSubTotal(null);
   };
 
   //********* Edit Item from cart *****************/
@@ -408,15 +418,19 @@ const ShoppingCart = ({navigation, route}) => {
     <View style={{flex: 1}}>
       <View
         style={{
+          // borderWidth: 1,
           flex: 5,
           alignItems: 'center',
           justifyContent: 'center',
           alignItems: 'center',
+          marginTop: 25,
         }}>
         <ScrollView
           bounces={false}
-          showsVerticalScrollIndicator={false}
+          // showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+            marginLeft: 20,
+            paddingBottom: 7,
             width: 330,
             borderRadius: 5,
             justifyContent: 'flex-start',
@@ -439,7 +453,9 @@ const ShoppingCart = ({navigation, route}) => {
           marginTop: 10,
           marginBottom: 30,
           alignItems: 'center',
-          flex: 4,
+          justifyContent: 'flex-end',
+          flex: 5,
+          // borderWidth: 1,
         }}>
         {/* Cart Entree Items Begin ********************************** */}
 
@@ -681,7 +697,7 @@ const ShoppingCart = ({navigation, route}) => {
           ) : (
             <Text
               style={{color: 'white', fontFamily: 'bebasneue', fontSize: 20}}>
-              Pay : ${total / 100}
+              Pay : ${(total / 100).toFixed(2)}
             </Text>
           )}
         </Button>

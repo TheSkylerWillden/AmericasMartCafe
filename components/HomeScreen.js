@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Button from '../sub-components/Button';
 import {Alert} from 'react-native';
 import {
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import {useEffect} from 'react/cjs/react.development';
 
 const HomeScreen = ({navigation}) => {
   const [categories, updateCategories] = useState([]);
@@ -17,7 +16,12 @@ const HomeScreen = ({navigation}) => {
     const fetchCategories = async () => {
       const temp = await firestore().collection('menuCategories').get();
       const tempArray = [];
-      temp.forEach(item => tempArray.push(item.data()));
+      temp.forEach(item => {
+        const data = item.data();
+        if (data.isActive == true) {
+          tempArray.push(item.data());
+        }
+      });
       updateCategories(tempArray);
     };
     fetchCategories();
@@ -35,7 +39,8 @@ const HomeScreen = ({navigation}) => {
           styles={{
             backgroundColor: 'white',
             marginTop: 10,
-            height: 80,
+            maxHeight: 80,
+            flexGrow: 1,
             width: 300,
             justifyContent: 'center',
             alignItems: 'center',
@@ -46,80 +51,6 @@ const HomeScreen = ({navigation}) => {
           </Text>
         </Button>
       ))}
-      {/* <View style={mainStyles.iconContainer1}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('EntreeList', {menuCategory: 'chicken'})
-          }>
-          <ImageBackground
-            imageStyle={{borderRadius: 10}}
-            style={mainStyles.icon}
-            source={require('../images/chicken_finger_meal.jpg')}>
-            <Text style={mainStyles.iconText}>Chicken</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-      </View>
-      <View style={mainStyles.iconContainer2}>
-        <TouchableOpacity onPress={() => Alert.alert('image clicked')}>
-          <ImageBackground
-            imageStyle={{borderRadius: 10}}
-            style={mainStyles.miniIcon}
-            source={require('../images/chicken_finger_meal.jpg')}>
-            <Text style={mainStyles.iconText}>Pizza</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => Alert.alert('image clicked')}>
-          <ImageBackground
-            imageStyle={{borderRadius: 10}}
-            style={mainStyles.miniIcon}
-            source={require('../images/chicken_finger_meal.jpg')}>
-            <Text style={mainStyles.iconText}>Breakfast</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-      </View>
-      <View style={mainStyles.iconContainer3}>
-        <View style={mainStyles.iconContainer4}>
-          <TouchableOpacity onPress={() => Alert.alert('image clicked', false)}>
-            <ImageBackground
-              imageStyle={{borderRadius: 10}}
-              style={mainStyles.miniIcon}
-              source={require('../images/chicken_finger_meal.jpg')}>
-              <Text style={mainStyles.iconText}>Seafood</Text>
-            </ImageBackground>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => Alert.prompt('Successfully added')}>
-            <ImageBackground
-              imageStyle={{borderRadius: 10}}
-              style={[mainStyles.miniIcon, , mainStyles.marginTop]}
-              source={require('../images/chicken_finger_meal.jpg')}>
-              <Text style={mainStyles.iconText}>Sides</Text>
-            </ImageBackground>
-          </TouchableOpacity>
-        </View>
-        <View style={mainStyles.iconContainer5}>
-          <TouchableOpacity onPress={() => Alert.alert('image clicked')}>
-            <ImageBackground
-              imageStyle={{borderRadius: 10}}
-              style={mainStyles.longIcon}
-              source={require('../images/chicken_finger_meal.jpg')}>
-              <Text style={mainStyles.iconText}>sandwiches</Text>
-            </ImageBackground>
-          </TouchableOpacity>
-        </View>
-      </View>
-      <View style={mainStyles.iconContainer1}>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('EntreeList', {menuCategory: 'burgers'})
-          }>
-          <ImageBackground
-            imageStyle={{borderRadius: 10}}
-            style={mainStyles.icon}
-            source={require('../images/chicken_finger_meal.jpg')}>
-            <Text style={mainStyles.iconText}>Burgers</Text>
-          </ImageBackground>
-        </TouchableOpacity>
-      </View> */}
     </View>
   );
 };
@@ -130,6 +61,8 @@ const mainStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 20,
   },
   iconContainer1: {
     marginTop: 10,

@@ -233,7 +233,7 @@ const RewardEntreeDetails = ({route, navigation}) => {
           width: 330,
         }}></View>
       <View style={{width: 330, flexDirection: 'row'}}>
-        {currentEntree.options.customizations ? (
+        {currentEntree.options.customizations.length > 0 ? (
           <Button
             styles={{
               height: 60,

@@ -120,7 +120,7 @@ const SauceSelection = ({
         <Button
           onPress={() => toggleSauceModal(false)}
           styles={{
-            width: 200,
+            width: 240,
             height: 40,
             backgroundColor: 'white',
             position: 'absolute',
@@ -128,9 +128,7 @@ const SauceSelection = ({
             alignItems: 'center',
             justifyContent: 'center',
           }}>
-          <Text style={{fontFamily: 'bebasneue', fontSize: 20, color: 'green'}}>
-            Confirm
-          </Text>
+          <Text style={{fontFamily: 'bebasneue', fontSize: 20}}>Confirm</Text>
         </Button>
       </View>
     </View>

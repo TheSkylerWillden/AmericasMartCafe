@@ -1,16 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  Image,
-  Alert,
-  TouchableOpacity,
-  Modal,
-} from 'react-native';
+import {View, StyleSheet, Text, ScrollView} from 'react-native';
 import Reward from '../sub-components/Reward';
 import {useUserContext} from '../contexts/User';
-import {useRewardContext} from '../contexts/RewardContext';
 import firestore from '@react-native-firebase/firestore';
 import Button from '../sub-components/Button';
 
@@ -24,6 +15,7 @@ const Rewards = ({navigation}) => {
       .collection('users')
       .doc(userRef)
       .collection('rewards')
+      .limit(10)
       .onSnapshot((rewardsList, error) => {
         const tempList = [];
         rewardsList.forEach(reward => {
@@ -38,20 +30,32 @@ const Rewards = ({navigation}) => {
   if (user)
     return (
       <View style={styles.main}>
-        <View>
-          {user != null
-            ? userRewards.map((reward, index) => {
-                return (
-                  <Reward
-                    itemRef={reward.ref}
-                    reward={reward.reward}
-                    key={reward.ref}
-                    navigation={navigation}
-                  />
-                );
-              })
-            : null}
-        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+            paddingRight: 5,
+          }}>
+          {userRewards.length !== 0 ? (
+            userRewards.map((reward, index) => {
+              return (
+                <Reward
+                  itemRef={reward.ref}
+                  reward={reward.reward}
+                  key={reward.ref}
+                  navigation={navigation}
+                />
+              );
+            })
+          ) : (
+            <Text style={{fontFamily: 'bebasneue', fontSize: 20}}>
+              No Rewards Currently
+            </Text>
+          )}
+        </ScrollView>
       </View>
     );
   else

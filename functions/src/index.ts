@@ -9,6 +9,7 @@ const stripe = require('stripe')(
     apiVersion: '2020-08-27',
   },
 );
+
 //Payment for customers who do not wish to create an account
 exports.GuestPayment = functions.https.onCall(async (data, context) => {
   const customer = await stripe.customers.create();
@@ -28,19 +29,35 @@ exports.GuestPayment = functions.https.onCall(async (data, context) => {
     paymentIntentId: paymentIntent.id,
   };
 });
+
 //Payment for customers who have signed in but have not placed an order previously
 exports.FirstTimeCustomerPayment = functions.https.onCall(
   async (data, context) => {
+    const total = await calculateTotal(
+      data.cartList,
+      data.totalReward,
+      data.userRef,
+    );
+
     const customer = await stripe.customers.create();
     const ephemeralKey = await stripe.ephemeralKeys.create(
       {customer: customer.id},
       {apiVersion: '2020-08-27'},
     );
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 1099,
+      amount: total,
       currency: 'usd',
       customer: customer.id,
     });
+
+    // Adding Stripe ID to User in Firestore
+    const newCustomer = await firestore
+      .collection('users')
+      .doc(data.userRef)
+      .get();
+
+    newCustomer.ref.update({stripeID: customer.id});
+
     return {
       paymentIntent: paymentIntent.client_secret,
       ephemeralKey: ephemeralKey.secret,
@@ -88,8 +105,10 @@ exports.PaymentReceived = functions.https.onRequest(async (req, res) => {
       newOrder.docs[0].ref.update({paymentConfirmed: true});
       //     // Checking to see whether a total reward was redeemed
       const newOrderData = newOrder.docs[0].data();
-      // if (Object.keys(newOrderData.totalReward).length !== 0) {
-      if (newOrderData.totalReward !== undefined) {
+      if (
+        newOrderData.totalReward !== undefined &&
+        Object.keys(newOrderData.totalReward).length !== 0
+      ) {
         const totalReward = await firestore
           .collection('users')
           .doc(newOrderData.userRef)
@@ -115,9 +134,11 @@ exports.PaymentReceived = functions.https.onRequest(async (req, res) => {
 
 //Create Food Order in Firestore
 exports.CreateFoodOrder = functions.https.onCall(async (data, context) => {
+  const formattedOrder = data.order;
+  formattedOrder.dateTime = admin.firestore.Timestamp.now();
   firestore
     .collection('orders')
-    .add(data.order)
+    .add(formattedOrder)
     .then(() => {
       return;
     });
@@ -215,8 +236,8 @@ const calculateTotal = async (cartList, totalReward, userRef) => {
       );
       //Checking to make sure reward is not expired or already redeemed
       if (
-        targetedReward.data().expirationDate < Date.now() &&
-        targetedReward.data().isRedeemed == false
+        // targetedReward.data().expirationDate < Date.now() &&
+        targetedReward.data().isRedeemed !== true
       ) {
         //Updating subtotal to discounted subtotal.
         subTotal = Number(
@@ -355,16 +376,20 @@ exports.MakeMe = functions.https.onCall(async (data, context) => {
     });
 });
 exports.QueryUsers = functions.https.onCall(async (data, context) => {
-  const customUsers = await admin
-    .auth()
-    .listUsers()
-    .then(results => {
-      return results.users.filter(
-        result =>
-          result.customClaims.admin == true ||
-          result.customClaims.employee == true,
-      );
+  const customUsers = await auth.listUsers().then(results => {
+    return results.users.filter(result => {
+      if (result.customClaims !== undefined) {
+        if (
+          result.customClaims.admin === true ||
+          result.customClaims.employee === true
+        ) {
+          return true;
+        }
+        return false;
+      }
+      return false;
     });
+  });
   return customUsers;
 });
 // ****************** Revoke Permissions **********************************
@@ -400,8 +425,33 @@ exports.RevokePermissions = functions.https.onCall(async (data, context) => {
 // Rewards Dynamic Creation when New User is Created ******************************
 exports.NewUserReward = functions.firestore
   .document('users/{userId}')
-  .onCreate((snap, context) => {
-    functions.logger.log('Herrorooooo!');
+  .onCreate(async (snap, context) => {
+    functions.logger.log('new document created');
+    const creationReward = await firestore
+      .collection('rewardsContinuous')
+      .get();
+    const rewardData = creationReward.docs[0].data();
+
+    // user
+    const doc = snap.data();
+    functions.logger.log('doc uid : ' + doc.uid);
+    let user;
+    await firestore
+      .collection('users')
+      .where('uid', '==', doc.uid)
+      .get()
+      .then(result => {
+        user = result.docs[0].ref.id;
+      });
+
+    functions.logger.log('user : ' + user);
+
+    // Give new user reward
+    firestore
+      .collection('users')
+      .doc(user)
+      .collection('rewards')
+      .add(rewardData);
   });
 // Disseminate New Reward to Applicable Users **********************************
 exports.DisseminateReward = functions.firestore

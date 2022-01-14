@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {ScrollView, View, Text, StyleSheet} from 'react-native';
 import Button from '../sub-components/Button';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import firestore from '@react-native-firebase/firestore';
 
 const PastOrders = ({updatePastOrdersModalActive, pastOrderList}) => {
   return (
@@ -47,8 +48,6 @@ const styles = StyleSheet.create({
   },
   modal: {
     height: 400,
-    // width: 300,
-    // backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
@@ -60,6 +59,10 @@ const styles = StyleSheet.create({
 
 const PastOrder = ({item}) => {
   const [orderSelected, updateOrderSelected] = useState(false);
+  const formattedDate = item.dateTime.toDate().toLocaleDateString();
+  const formattedTime = item.dateTime
+    .toDate()
+    .toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 
   if (orderSelected == false) {
     return (
@@ -82,7 +85,12 @@ const PastOrder = ({item}) => {
             }}>
             <Text
               style={{fontFamily: 'bebasneue', fontSize: 16, color: '#cb0e28'}}>
-              {item.date}
+              {formattedDate}
+            </Text>
+
+            <Text
+              style={{fontFamily: 'bebasneue', fontSize: 14, color: '#cb0e28'}}>
+              {formattedTime}
             </Text>
           </View>
           <View
@@ -105,11 +113,7 @@ const PastOrder = ({item}) => {
             <Ionicons
               size={20}
               color={item.orderFulfilled == true ? 'green' : 'grey'}
-              name={
-                item.orderFulfilled == false
-                  ? 'checkmark-circle'
-                  : 'md-ellipse-outline'
-              }
+              name={'checkmark-circle'}
             />
           </View>
         </View>
@@ -145,11 +149,7 @@ const PastOrder = ({item}) => {
             <Ionicons
               size={20}
               color={item.orderFulfilled == true ? 'green' : 'grey'}
-              name={
-                item.orderFulfilled == false
-                  ? 'checkmark-circle'
-                  : 'md-ellipse-outline'
-              }
+              name={'checkmark-circle'}
             />
           </View>
         </View>
@@ -201,12 +201,9 @@ const PastOrder = ({item}) => {
             width: 290,
             flexDirection: 'row',
           }}>
-          <Text
-            style={{fontFamily: 'bebasneue', fontSize: 18, color: '#cb0e28'}}>
-            Total :{' '}
-          </Text>
+          <Text style={{fontFamily: 'bebasneue', fontSize: 18}}>Total : </Text>
           <Text style={{fontFamily: 'bebasneue', fontSize: 18}}>
-            $ {item.total / 100}
+            $ {(item.total / 100).toFixed(2)}
           </Text>
         </View>
         <View style={{flexDirection: 'row'}}>

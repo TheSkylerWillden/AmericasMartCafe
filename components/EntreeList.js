@@ -30,6 +30,7 @@ const EntreeListStyles = StyleSheet.create({
     // backgroundColor: '#cb0e28',
     flex: 1,
     justifyContent: 'center',
+    paddingTop: 25,
   },
   scrollView: {
     flexGrow: 1,

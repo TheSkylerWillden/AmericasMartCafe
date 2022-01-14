@@ -6,26 +6,24 @@ import {
   Alert,
   TextInput,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import {useMenuContext} from '../contexts/Menu';
 import Button from '../sub-components/Button';
+import storage from '@react-native-firebase/storage';
+import FastImage from 'react-native-fast-image';
 
 const Reward = ({reward, itemRef, navigation}) => {
   const [localRedeemedState, updateLocalRedeemedState] = useState(
     reward.isRedeemed,
   );
   const menu = useMenuContext().menu;
-  // const expirationDate = reward.expirationDate.toDate();
-  const expirationDate = reward.expirationDate;
+  const expirationDate = new Date(reward.expirationDate);
 
   const rewardData = {
     ...reward,
     id: itemRef,
   };
-
-  useEffect(() => {
-    updateLocalRedeemedState(rewardData.isRedeemed);
-  }, []);
 
   let entreeData;
   //Finding the appropriate menu item which the reward applies to
@@ -34,6 +32,23 @@ const Reward = ({reward, itemRef, navigation}) => {
       menuItem => menuItem.title === rewardData.rewardItem,
     );
   }
+  const [imageRef, updateImageRef] = useState();
+
+  const fetchImage = async () => {
+    const temp = await storage()
+      .ref(`/images/${entreeData.imageTitle}`)
+      .getDownloadURL();
+
+    await updateImageRef(temp);
+  };
+
+  useEffect(() => {
+    fetchImage();
+  }, []);
+
+  useEffect(() => {
+    updateLocalRedeemedState(rewardData.isRedeemed);
+  }, []);
 
   const redeem = () => {
     updateLocalRedeemedState(true);
@@ -52,83 +67,100 @@ const Reward = ({reward, itemRef, navigation}) => {
     return (
       <Button
         styles={{
-          width: 330,
-          height: 40,
+          // width: 330,
+          alignSelf: 'stretch',
+          height: 70,
           backgroundColor: 'white',
-          marginBottom: 15,
-          alignItems: 'center',
-          justifyContent: 'center',
+          marginBottom: 10,
           shadowColor: 'red',
         }}>
-        <Text style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
-          {rewardData.rewardDescription}
-        </Text>
-        <Text
-          style={{
-            fontFamily: 'roboto',
-            fontSize: 10,
-            color: 'red',
-          }}>
-          - Reward Redeemed
-        </Text>
+        {/* Shadow Box Container */}
+        <View
+          style={{overflow: 'hidden', flexDirection: 'row', borderRadius: 6}}>
+          <View>
+            <FastImage
+              style={[styles.entreeImage, {backgroundColor: 'grey'}]}
+              source={{
+                uri: imageRef,
+                // headers: { Authorization: 'someAuthToken' },
+                priority: FastImage.priority.normal,
+              }}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+          </View>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 260,
+            }}>
+            <Text
+              style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
+              {rewardData.rewardDescription}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'roboto',
+                fontSize: 10,
+                color: 'red',
+              }}>
+              - Reward Redeemed
+            </Text>
+          </View>
+        </View>
+        {/* </View> */}
       </Button>
     );
     //Reward is expired
   } else if (expirationDate < Date.now()) {
     return (
-      // <TouchableOpacity
-      //   style={
-      //     rewardData.isRedeemed == false && expirationDate > Date.now()
-      //       ? styles.main
-      //       : styles.invalid
-      //   }>
-      //   <Text>{rewardData.rewardDescription}</Text>
-      //   <Text>Reward Expired</Text>
-      // </TouchableOpacity>
       <Button
         styles={{
-          width: 330,
-          height: 40,
+          // width: 330,
+          height: 70,
           backgroundColor: 'white',
-          marginBottom: 15,
-          alignItems: 'center',
-          justifyContent: 'center',
+          marginBottom: 10,
           shadowColor: 'red',
         }}>
-        <Text style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
-          {rewardData.rewardDescription}
-        </Text>
-        <Text
-          style={{
-            fontFamily: 'roboto',
-            fontSize: 10,
-            color: 'red',
-          }}>
-          - Reward Expired
-        </Text>
+        {/* Shadow Box Container */}
+        <View
+          style={{overflow: 'hidden', flexDirection: 'row', borderRadius: 6}}>
+          <View>
+            <FastImage
+              style={[styles.entreeImage, {backgroundColor: 'grey'}]}
+              source={{
+                uri: imageRef,
+                // headers: { Authorization: 'someAuthToken' },
+                priority: FastImage.priority.normal,
+              }}
+              resizeMode={FastImage.resizeMode.contain}
+            />
+          </View>
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 260,
+            }}>
+            <Text
+              style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
+              {rewardData.rewardDescription}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'roboto',
+                fontSize: 10,
+                color: 'red',
+              }}>
+              - Reward Expired
+            </Text>
+          </View>
+        </View>
       </Button>
     );
     //Reward is not expired or redeemed
   } else {
     return (
-      // <TouchableOpacity
-      //   style={
-      //     rewardData.isRedeemed == false && expirationDate > Date.now()
-      //       ? styles.main
-      //       : styles.invalid
-      //   }>
-      //   <Text>{rewardData.rewardDescription}</Text>
-      //   {
-      //     <TouchableOpacity
-      //       style={{backgroundColor: 'green'}}
-      //       onPress={() => {
-      //         updateLocalRedeemedState(true);
-      //         redeem();
-      //       }}>
-      //       <Text>Redeem</Text>
-      //     </TouchableOpacity>
-      //   }
-      // </TouchableOpacity>
       <Button
         onPress={() => {
           // updateLocalRedeemedState(true);
@@ -143,25 +175,46 @@ const Reward = ({reward, itemRef, navigation}) => {
           );
         }}
         styles={{
-          width: 330,
-          height: 40,
+          // width: 330,
+          height: 70,
           backgroundColor: 'white',
-          marginBottom: 15,
+          marginBottom: 10,
           alignItems: 'center',
           justifyContent: 'center',
           shadowColor: 'green',
         }}>
-        <Text style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
-          {rewardData.rewardDescription}
-        </Text>
-        <Text
-          style={{
-            fontFamily: 'roboto',
-            fontSize: 10,
-            color: 'green',
-          }}>
-          - Redeem
-        </Text>
+        {/* Shadow Box Container */}
+        <View
+          style={{overflow: 'hidden', flexDirection: 'row', borderRadius: 6}}>
+          <FastImage
+            style={[styles.entreeImage, {backgroundColor: 'grey'}]}
+            source={{
+              uri: imageRef,
+              // headers: { Authorization: 'someAuthToken' },
+              priority: FastImage.priority.normal,
+            }}
+            resizeMode={FastImage.resizeMode.contain}
+          />
+          <View
+            style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: 260,
+            }}>
+            <Text
+              style={{fontFamily: 'bebasneue', color: 'black', fontSize: 20}}>
+              {rewardData.rewardDescription}
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'roboto',
+                fontSize: 10,
+                color: 'green',
+              }}>
+              - Redeem
+            </Text>
+          </View>
+        </View>
       </Button>
     );
   }
@@ -183,6 +236,10 @@ const styles = StyleSheet.create({
     width: 300,
     padding: 5,
     margin: 3,
+  },
+  entreeImage: {
+    height: 70,
+    width: 70,
   },
 });
 

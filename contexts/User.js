@@ -22,42 +22,51 @@ const UserContextProvider = ({children}) => {
   }, []);
 
   useEffect(() => {
-    if (googleUser != null) {
-      updateUser();
+    let userSub;
+
+    if (googleUser != null && googleUser.uid != undefined) {
+      firestore()
+        .collection('users')
+        .where('uid', '==', googleUser.uid)
+        .onSnapshot(response => {
+          if (response.docs.length > 0) {
+            const data = response.docs[0].data();
+            setUser({...data, userRef: response.docs[0].ref.id});
+          }
+        });
     }
+    return userSub;
   }, [googleUser]);
 
   // Handle user state changes
   function onAuthStateChanged(googleUser) {
     setGoogleUser(googleUser);
+    // updateUser(googleUser);
   }
 
-  const updateUser = async () => {
-    const response = await firestore()
-      .collection('users')
-      .where('uid', '==', googleUser.uid)
-      .get();
+  // const updateUser = async googleUser => {
+  //   if (googleUser !== null) {
+  //     const response = await firestore()
+  //       .collection('users')
+  //       .where('uid', '==', googleUser.uid)
+  //       .get();
 
-    if (response.size == 0) {
-      firestore().collection('users').add({
-        uid: googleUser.uid,
-        name: googleUser.displayName,
-        email: googleUser.email,
-        stripeID: null,
-      });
-    } else {
-      const {uid, name, email, stripeID} = response.docs[0].data();
-      const userRef = response.docs[0].ref.id;
+  //     if (response.docs.length > 0) {
+  //       const {uid, name, email, stripeID} = response.docs[0].data();
+  //       const userRef = response.docs[0].ref.id;
 
-      setUser({
-        uid: uid,
-        name: name,
-        email: email,
-        stripeID: stripeID,
-        userRef: userRef,
-      });
-    }
-  };
+  //       setUser({
+  //         uid: uid,
+  //         name: name,
+  //         email: email,
+  //         stripeID: stripeID,
+  //         userRef: userRef,
+  //       });
+  //     }
+  //   } else {
+  //     setUser(null);
+  //   }
+  // };
 
   return (
     <UserContext.Provider value={{googleUser, setGoogleUser, user, setUser}}>

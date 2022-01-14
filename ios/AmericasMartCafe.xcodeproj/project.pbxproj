@@ -16,6 +16,7 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A5BF1C3226C32082007BF196 /* Fix.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BF1C3126C32082007BF196 /* Fix.swift */; };
 		A5C76021269CCD7C007AF319 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A5C76020269CCD7C007AF319 /* GoogleService-Info.plist */; };
+		A5D82F752792002000A13037 /* americas_mart_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = A5D82F742792002000A13037 /* americas_mart_logo.png */; };
 		BAE2197456AD485B8CC94892 /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3656E0685A924B04A63CAC49 /* Roboto-Medium.ttf */; };
 		E99CDD53E8333EAD5F41994C /* libPods-AmericasMartCafe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 33399553DFC5B15602372EBE /* libPods-AmericasMartCafe.a */; };
 /* End PBXBuildFile section */
@@ -52,6 +53,7 @@
 		A5BF1C3126C32082007BF196 /* Fix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fix.swift; sourceTree = "<group>"; };
 		A5C76020269CCD7C007AF319 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A5D2F5D02739B35800F71AC8 /* AmericasMartCafe.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = AmericasMartCafe.entitlements; path = AmericasMartCafe/AmericasMartCafe.entitlements; sourceTree = "<group>"; };
+		A5D82F742792002000A13037 /* americas_mart_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = americas_mart_logo.png; sourceTree = "<group>"; };
 		AEB3F5E1BED75ADCBD349F38 /* libPods-AmericasMartCafe-AmericasMartCafeTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AmericasMartCafe-AmericasMartCafeTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -99,6 +101,7 @@
 				A5D2F5D02739B35800F71AC8 /* AmericasMartCafe.entitlements */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
+				A5D82F742792002000A13037 /* americas_mart_logo.png */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -280,6 +283,7 @@
 				A5C76021269CCD7C007AF319 /* GoogleService-Info.plist in Resources */,
 				1AE57349B6444E7691415371 /* BebasNeue-Regular.ttf in Resources */,
 				BAE2197456AD485B8CC94892 /* Roboto-Medium.ttf in Resources */,
+				A5D82F752792002000A13037 /* americas_mart_logo.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -482,6 +486,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 3344QLDQWS;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -516,6 +521,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 3344QLDQWS;
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = AmericasMartCafeTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;

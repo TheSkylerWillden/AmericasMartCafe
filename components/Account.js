@@ -8,7 +8,6 @@ import {
   Modal,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import AccountDetails from './AccountDetails';
 import {useUserContext} from '../contexts/User';
 import {
   GoogleSignin,
@@ -25,26 +24,26 @@ GoogleSignin.configure({
 });
 
 const Account = ({navigation}) => {
+  const [pickupName, updatePickupName] = useState();
   const [email, setEmail] = useState();
   const [password, setPassword] = useState();
+  const [confirmPassword, updateConfirmPassword] = useState();
   const user = useUserContext().user;
   const googleUser = useUserContext().googleUser;
+  const setGoogleUser = useUserContext().setGoogleUser;
   const setUser = useUserContext().setUser;
   const [signInActive, updateSignInActive] = useState(false);
   const [pastOrdersModalActive, updatePastOrdersModalActive] = useState(false);
   const [pastOrderList, updatePastOrderList] = useState([]);
 
-  console.log(pastOrderList);
-
   // Fetching Past Orders for the User *****************
   useEffect(() => {
-    if (googleUser !== null) {
+    if (user !== null && user !== undefined) {
       const temp = firestore()
         .collection('orders')
         .where('userRef', '==', user.userRef)
-        .limit(5)
-        .orderBy('date', 'desc')
         .orderBy('dateTime', 'desc')
+        .limit(5)
         .onSnapshot(result => {
           const tempArray = [];
           result.forEach(item => {
@@ -55,7 +54,7 @@ const Account = ({navigation}) => {
 
       return () => temp();
     }
-  }, []);
+  }, [googleUser]);
 
   // Google Button Press *************************
   const onGoogleButtonPress = async () => {
@@ -66,14 +65,72 @@ const Account = ({navigation}) => {
     const googleCredential = auth.GoogleAuthProvider.credential(idToken);
 
     // Sign-in the user with the credential
-    return auth().signInWithCredential(googleCredential);
+    await auth().signInWithCredential(googleCredential);
+
+    const authUser = auth().currentUser;
+    const response = await firestore()
+      .collection('users')
+      .where('uid', '==', authUser.uid)
+      .get();
+    if (response.docs.length == 0) {
+      const newUser = await firestore().collection('users').add({
+        uid: authUser.uid,
+        name: authUser.displayName,
+        email: authUser.email,
+        stripeID: null,
+      });
+      setGoogleUser(prev => {
+        console.log(prev);
+
+        return {...prev._user};
+      });
+    }
   };
 
   // Create New User ***************************
   const createNewUser = () => {
+    if (password.length !== 8) {
+      Toast.show({
+        type: 'warning',
+        text1: 'Password must be at least 10 characters.',
+        // text2: `${currentEntree.title} added to cart.`,
+        visibilityTime: 1750,
+      });
+      return;
+    }
+    if (password != confirmPassword) {
+      Toast.show({
+        type: 'warning',
+        text1: 'Passwords do not match!',
+        // text2: `${currentEntree.title} added to cart.`,
+        visibilityTime: 1750,
+      });
+      return;
+    }
+    if (pickupName == null) {
+      Toast.show({
+        type: 'warning',
+        text1: 'Please include a name for pickups',
+        // text2: `${currentEntree.title} added to cart.`,
+        visibilityTime: 1750,
+      });
+      return;
+    }
     auth()
       .createUserWithEmailAndPassword(email, password)
-      .then(() => {
+      .then(async result => {
+        // Updating Firebase Auth User with a display name. **********
+        await result.user.updateProfile({displayName: pickupName});
+        await result.user.reload();
+        const authUser = auth().currentUser;
+        const newUser = await firestore().collection('users').add({
+          uid: authUser.uid,
+          name: authUser.displayName,
+          email: authUser.email,
+          stripeID: null,
+        });
+        await setGoogleUser(authUser);
+
         Toast.show({
           type: 'success',
           text1: 'User Account created and Signed In.',
@@ -100,7 +157,7 @@ const Account = ({navigation}) => {
           });
         }
 
-        // console.error(error);
+        // console.log(error);
       });
   };
 
@@ -150,7 +207,7 @@ const Account = ({navigation}) => {
           // text2: `${currentEntree.title} added to cart.`,
           visibilityTime: 1750,
         });
-        setUser(null);
+        // setUser(null);
       });
   };
 
@@ -294,6 +351,24 @@ const Account = ({navigation}) => {
           Create Account
         </Text>
         <TextInput
+          placeholder="pickup name"
+          value={pickupName}
+          onChangeText={updatePickupName}
+          style={{
+            backgroundColor: 'white',
+            // borderWidth: 1,
+            padding: 5,
+            borderRadius: 6,
+            margin: 2,
+            width: 250,
+            height: 40,
+            shadowColor: 'black',
+            shadowOffset: {width: 3, height: 3},
+            shadowOpacity: 0.5,
+            marginBottom: 7,
+          }}
+        />
+        <TextInput
           placeholder="email"
           value={email}
           onChangeText={setEmail}
@@ -309,7 +384,7 @@ const Account = ({navigation}) => {
             shadowColor: 'black',
             shadowOffset: {width: 3, height: 3},
             shadowOpacity: 0.5,
-            marginBottom: 10,
+            marginBottom: 7,
           }}
         />
         <TextInput
@@ -327,9 +402,28 @@ const Account = ({navigation}) => {
             shadowColor: 'black',
             shadowOffset: {width: 3, height: 3},
             shadowOpacity: 0.5,
+            marginBottom: 7,
+          }}
+          // secureTextEntry={true}
+        />
+        <TextInput
+          placeholder="confirm password"
+          value={confirmPassword}
+          onChangeText={updateConfirmPassword}
+          style={{
+            backgroundColor: 'white',
+            // borderWidth: 1,
+            padding: 5,
+            borderRadius: 6,
+            margin: 2,
+            width: 250,
+            height: 40,
+            shadowColor: 'black',
+            shadowOffset: {width: 3, height: 3},
+            shadowOpacity: 0.5,
             marginBottom: 15,
           }}
-          secureTextEntry={true}
+          // secureTextEntry={true}
         />
 
         <Button
